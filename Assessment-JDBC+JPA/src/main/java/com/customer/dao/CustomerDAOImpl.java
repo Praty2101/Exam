@@ -8,167 +8,104 @@ import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.TypedQuery;
 import java.util.List;
 
-/**
- * Q3: Implementation of CustomerDAO interface.
- * Performs CRUD operations using JPA EntityManager.
- * All operations use proper transaction management.
- *
- * Q4: Contains JPQL query to fetch Customer by email.
- */
 public class CustomerDAOImpl implements CustomerDAO {
 
-    // ================================================================
-    //              Q3: CRUD OPERATIONS
-    // ================================================================
-
-    /**
-     * Saves a new customer (with cascaded order if set).
-     * Returns a success/failure message.
-     */
     @Override
     public String saveCustomer(Customer customer) {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
-        EntityTransaction transaction = em.getTransaction();
-
+        EntityTransaction tx = em.getTransaction();
         try {
-            transaction.begin();
+            tx.begin();
             em.persist(customer);
-            transaction.commit();
-            return "✅ Customer saved successfully! Customer ID: " + customer.getId();
+            tx.commit();
+            return "Customer saved. ID: " + customer.getId();
         } catch (Exception e) {
-            if (transaction.isActive()) {
-                transaction.rollback();
-            }
-            return "❌ Error saving customer: " + e.getMessage();
+            if (tx.isActive()) tx.rollback();
+            return "Error saving customer: " + e.getMessage();
         } finally {
             em.close();
         }
     }
 
-    /**
-     * Updates an existing customer's details.
-     * The customer object should have the ID set.
-     */
     @Override
     public String updateCustomer(Customer customer) {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
-        EntityTransaction transaction = em.getTransaction();
-
+        EntityTransaction tx = em.getTransaction();
         try {
-            transaction.begin();
-
+            tx.begin();
             Customer existing = em.find(Customer.class, customer.getId());
             if (existing == null) {
-                transaction.rollback();
-                return "⚠️ No customer found with ID: " + customer.getId();
+                tx.rollback();
+                return "No customer found with ID: " + customer.getId();
             }
-
             existing.setCustomerName(customer.getCustomerName());
             existing.setEmail(customer.getEmail());
             existing.setGender(customer.getGender());
             existing.setPhone(customer.getPhone());
             existing.setRegistrationDate(customer.getRegistrationDate());
-
             em.merge(existing);
-            transaction.commit();
-            return "✅ Customer updated successfully!";
+            tx.commit();
+            return "Customer updated successfully.";
         } catch (Exception e) {
-            if (transaction.isActive()) {
-                transaction.rollback();
-            }
-            return "❌ Error updating customer: " + e.getMessage();
+            if (tx.isActive()) tx.rollback();
+            return "Error updating customer: " + e.getMessage();
         } finally {
             em.close();
         }
     }
 
-    /**
-     * Deletes a customer by ID.
-     * Order is deleted automatically due to CascadeType.ALL + orphanRemoval.
-     */
     @Override
     public String deleteCustomerById(int id) {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
-        EntityTransaction transaction = em.getTransaction();
-
+        EntityTransaction tx = em.getTransaction();
         try {
-            transaction.begin();
-
+            tx.begin();
             Customer customer = em.find(Customer.class, id);
             if (customer == null) {
-                transaction.rollback();
-                return "⚠️ No customer found with ID: " + id;
+                tx.rollback();
+                return "No customer found with ID: " + id;
             }
-
             em.remove(customer);
-            transaction.commit();
-            return "✅ Customer deleted! (Order also deleted automatically via cascade)";
+            tx.commit();
+            return "Customer deleted. (Order also deleted via cascade)";
         } catch (Exception e) {
-            if (transaction.isActive()) {
-                transaction.rollback();
-            }
-            return "❌ Error deleting customer: " + e.getMessage();
+            if (tx.isActive()) tx.rollback();
+            return "Error deleting customer: " + e.getMessage();
         } finally {
             em.close();
         }
     }
 
-    /**
-     * Fetches a customer by ID (with order via EAGER fetch).
-     */
     @Override
     public Customer getCustomerById(int id) {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
-
         try {
-            Customer customer = em.find(Customer.class, id);
-            if (customer == null) {
-                System.out.println("⚠️ No customer found with ID: " + id);
-            }
-            return customer;
+            return em.find(Customer.class, id);
         } finally {
             em.close();
         }
     }
 
-    /**
-     * Fetches all customers.
-     */
     @Override
     public List<Customer> getAllCustomers() {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
-
         try {
-            TypedQuery<Customer> query = em.createQuery(
-                "SELECT c FROM Customer c", Customer.class);
+            TypedQuery<Customer> query = em.createQuery("SELECT c FROM Customer c", Customer.class);
             return query.getResultList();
         } finally {
             em.close();
         }
     }
 
-    // ================================================================
-    //      Q4: JPQL QUERY - Fetch Customer by Email
-    // ================================================================
-
-    /**
-     * JPQL query to fetch Customer by email address.
-     * Uses a parameterized query for safety.
-     */
     @Override
     public Customer getCustomerByEmail(String email) {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
-
         try {
             TypedQuery<Customer> query = em.createQuery(
                 "SELECT c FROM Customer c WHERE c.email = :email", Customer.class);
             query.setParameter("email", email);
-
             List<Customer> results = query.getResultList();
-            if (results.isEmpty()) {
-                System.out.println("⚠️ No customer found with email: " + email);
-                return null;
-            }
+            if (results.isEmpty()) return null;
             return results.get(0);
         } finally {
             em.close();

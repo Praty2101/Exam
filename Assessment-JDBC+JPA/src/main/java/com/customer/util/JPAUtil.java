@@ -3,31 +3,26 @@ package com.customer.util;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 
-/**
- * Utility class for managing JPA EntityManagerFactory.
- * Provides a singleton EntityManagerFactory instance.
- */
 public class JPAUtil {
 
-    private static EntityManagerFactory entityManagerFactory;
+    private static EntityManagerFactory emf;
 
     static {
         try {
-            entityManagerFactory = Persistence.createEntityManagerFactory("CustomerPU");
+            emf = Persistence.createEntityManagerFactory("CustomerPU");
         } catch (Exception e) {
-            System.err.println("ERROR: EntityManagerFactory creation failed!");
             e.printStackTrace();
             throw new ExceptionInInitializerError(e);
         }
     }
 
     public static EntityManagerFactory getEntityManagerFactory() {
-        return entityManagerFactory;
+        return emf;
     }
 
     public static void shutdown() {
-        if (entityManagerFactory != null && entityManagerFactory.isOpen()) {
-            entityManagerFactory.close();
+        if (emf != null && emf.isOpen()) {
+            emf.close();
         }
     }
 }

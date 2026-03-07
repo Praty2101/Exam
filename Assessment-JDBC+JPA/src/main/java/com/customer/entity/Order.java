@@ -3,13 +3,6 @@ package com.customer.entity;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
-/**
- * Q1: Entity class mapped to the 'orders' table.
- * Has a One-to-One relationship with Customer.
- * Order is the owning side of the relationship (has the FK column).
- *
- * Note: Table name is 'orders' because 'order' is a reserved keyword in SQL.
- */
 @Entity
 @Table(name = "orders")
 public class Order {
@@ -33,34 +26,20 @@ public class Order {
     @Column(name = "order_date")
     private LocalDate orderDate;
 
-    /**
-     * One-to-One mapping with Customer.
-     * This is the owning side of the relationship.
-     * @JoinColumn creates a foreign key column 'customer_id' in the orders table.
-     */
     @OneToOne
     @JoinColumn(name = "customer_id", referencedColumnName = "id")
     private Customer customer;
 
-    // ========================
-    // Constructors
-    // ========================
-
     public Order() {
     }
 
-    public Order(String orderNumber, String productName, int quantity,
-                 double price, LocalDate orderDate) {
+    public Order(String orderNumber, String productName, int quantity, double price, LocalDate orderDate) {
         this.orderNumber = orderNumber;
         this.productName = productName;
         this.quantity = quantity;
         this.price = price;
         this.orderDate = orderDate;
     }
-
-    // ========================
-    // Getters and Setters
-    // ========================
 
     public int getId() {
         return id;
@@ -118,26 +97,9 @@ public class Order {
         this.customer = customer;
     }
 
-    // ========================
-    // toString
-    // ========================
-
     @Override
     public String toString() {
-        return String.format(
-            "| %-4d | %-15s | %-20s | %-8d | %10.2f | %-12s |",
-            id, orderNumber, productName, quantity, price, orderDate
-        );
-    }
-
-    public String toDetailString() {
-        return "--------------------------------------------\n" +
-               "  Order ID      : " + id + "\n" +
-               "  Order Number  : " + orderNumber + "\n" +
-               "  Product Name  : " + productName + "\n" +
-               "  Quantity      : " + quantity + "\n" +
-               "  Price         : " + String.format("%.2f", price) + "\n" +
-               "  Order Date    : " + orderDate + "\n" +
-               "--------------------------------------------";
+        return "Order [id=" + id + ", orderNumber=" + orderNumber + ", product=" + productName +
+               ", qty=" + quantity + ", price=" + price + ", orderDate=" + orderDate + "]";
     }
 }
